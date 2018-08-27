@@ -2,6 +2,7 @@
 from bs4 import BeautifulSoup
 import re
 import pymysql
+from pyecharts import Bar
 from lotterymodel import PeriodModel,WinningNumberModel,SalesInfoModel
 
 def getTableRows(pageIndex):
@@ -65,5 +66,36 @@ def getConnection():
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
 
+def analysisHitTimes():
+    # 使用cursor()方法获取操作游标 
+    conn  = getConnection()
+    cursor = conn.cursor()
+    
+    try:
+        # 执行SQL语句
+        cursor.execute('CALL Proc_HitTimes()')
+        # 获取所有记录列表
+        results = cursor.fetchall()
+        
+        bar = Bar("双色球分析", "每个数字的命中次数")
+        bar.use_theme('dark')
+        
+        textList = []
+        valueList = []
+        for row in results:
+            textList.append(row['OpenNumber'])
+            valueList.append(row['OpenNumberCount'])
+
+        bar.add("命中次数", textList, valueList)
+
+        bar.render()
+    except Exception as queryError:
+        print(queryError)
+    finally:
+        conn.close()
+
 # 解析开奖信息Html
 parsePage()
+
+# 展示分析结果
+analysisHitTimes()
