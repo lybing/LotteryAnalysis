@@ -112,7 +112,7 @@ def analysisFrequency_Pie():
 
         pie = Pie()
         pie.use_theme('dark')
-        pie.add("命中次数", textList, valueList, '55%', ['50%', '60%'], {})
+        pie.add("命中次数", textList, valueList, '55%', ['50%', '60%'], roseType='area', is_label_show=True)
 
         pie.render()
     except Exception as queryError:
