@@ -2,7 +2,7 @@
 from bs4 import BeautifulSoup
 import re
 import pymysql
-from pyecharts import Bar
+from pyecharts import Bar, Pie, Bar3D
 from lotterymodel import PeriodModel,WinningNumberModel,SalesInfoModel
 
 def getTableRows(pageIndex):
@@ -77,15 +77,14 @@ def analysisHitTimes():
         # 获取所有记录列表
         results = cursor.fetchall()
         
-        bar = Bar("双色球分析", "每个数字的命中次数")
-        bar.use_theme('dark')
-        
         textList = []
         valueList = []
         for row in results:
             textList.append(row['OpenNumber'])
             valueList.append(row['OpenNumberCount'])
-
+        
+        bar = Bar("双色球分析", "每个数字的命中次数")
+        bar.use_theme('dark')
         bar.add("命中次数", textList, valueList)
 
         bar.render()
@@ -94,8 +93,38 @@ def analysisHitTimes():
     finally:
         conn.close()
 
-# 解析开奖信息Html
-parsePage()
+def analysisFrequency_Pie():
+    # 使用cursor()方法获取操作游标 
+    conn  = getConnection()
+    cursor = conn.cursor()
+    
+    try:
+        # 执行SQL语句
+        cursor.execute('CALL Proc_HitTimes()')
+        # 获取所有记录列表
+        results = cursor.fetchall()
+        
+        textList = []
+        valueList = []
+        for row in results:
+            textList.append(row['OpenNumber'])
+            valueList.append(row['OpenNumberCount'])
 
-# 展示分析结果
-analysisHitTimes()
+        pie = Pie()
+        pie.use_theme('dark')
+        pie.add("命中次数", textList, valueList, '55%', ['50%', '60%'], {})
+
+        pie.render()
+    except Exception as queryError:
+        print(queryError)
+    finally:
+        conn.close()
+
+# 解析开奖信息Html
+# parsePage()
+
+# 以Bar的方式展示分析每个数字被击中的次数
+# analysisHitTimes()
+
+# 以Pie的方式展示每个数字的频率
+analysisFrequency_Pie()
